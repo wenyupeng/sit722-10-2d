@@ -25,7 +25,7 @@ on:
       aks_resource_group:
         required: true
         type: string
-        default: 'deakinuni'
+        default: 'chriswen430-rg'
   push:
     branches:
       - main
@@ -51,12 +51,12 @@ jobs:
 
       # Login to Azure Container Registry (ACR)
       - name: Login to Azure Container Registry
-        run: az acr login --name ${{ secrets.AZURE_CONTAINER_REGISTRY }}
+        run: az acr login --name ${{ secrets.ACR_LOGIN_SERVER }}
 
       - name: Set Kubernetes context (get AKS credentials)
         uses: azure/aks-set-context@v3
         with:
-          resource-group: ${{ inputs.aks_resource_group || 'deakinuni'}}
+          resource-group: ${{ inputs.aks_resource_group || 'chriswen430-rg'}}
           cluster-name: ${{ inputs.aks_cluster_name || 'week09-aks' }}
 
       # Auto-fetch Product and Order service IPs from Kubernetes
@@ -101,7 +101,7 @@ jobs:
         id: frontend_version
         run: |
           latest=$(az acr repository show-tags \
-            --name ${{ secrets.AZURE_CONTAINER_REGISTRY }} \
+            --name ${{ secrets.ACR_LOGIN_SERVER }} \
             --repository frontend \
             --query "sort(@)[-1]" -o tsv 2>/dev/null || echo "")
           if [[ -z "$latest" ]]; then
@@ -117,8 +117,8 @@ jobs:
       # Build and Push Docker image for Frontend
       - name: Build and Push Frontend Image
         run: |
-          docker build -t ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend:${{ env.NEXT_FRONTEND_VERSION }} ./frontend/
-          docker push ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend:${{ env.NEXT_FRONTEND_VERSION }}
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/frontend:${{ env.NEXT_FRONTEND_VERSION }} ./frontend/
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/frontend:${{ env.NEXT_FRONTEND_VERSION }}
 
       - name: Deploy Frontend to AKS
         run: |

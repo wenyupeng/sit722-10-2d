@@ -1,4 +1,4 @@
-# week08/k8s/order-service.yaml
+# sit722-10-2d/k8s/order-service.yaml
 
 apiVersion: apps/v1
 kind: Deployment
@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: order-service-container
-        image: chriswen430week09acr.azurecr.io/order_service:latest
+        image: chriswen430acr.azurecr.io/order_service:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000

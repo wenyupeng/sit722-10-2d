@@ -1,20 +1,20 @@
-# sit722-10-2d/k8s/product-db.yaml
+# sit722-10-2d/k8s/order-db.yaml
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: product-db-deployment-task10-2d
+  name: customer-db-deployment-task10-2d # Deployment name matches
   labels:
-    app: product-db
+    app: customer-db
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: product-db
+      app: customer-db
   template:
     metadata:
       labels:
-        app: product-db
+        app: customer-db
     spec:
       containers:
       - name: postgres
@@ -26,7 +26,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: ecomm-config-task10-2d # ConfigMap name matches
-              key: PRODUCTS_DB_NAME
+              key: CUSTOMERS_DB_NAME # Point to the order database name
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
@@ -41,12 +41,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: product-db-service-task10-2d # Internal DNS name for the Product DB
+  name: customer-db-service-task10-2d # Internal DNS name for the Customer DB
   labels:
-    app: product-db
+    app: customer-db
 spec:
   selector:
-    app: product-db # Selects pods with the label app: product-db
+    app: customer-db # Selects pods with the label app: customer-db
   ports:
     - protocol: TCP
       port: 5432 # The port the service listens on (default PostgreSQL)

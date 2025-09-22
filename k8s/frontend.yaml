@@ -1,4 +1,4 @@
-# week08/k8s/frontend.yaml
+# sit722-10-2d/k8s/frontend.yaml
 
 apiVersion: apps/v1
 kind: Deployment
@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: frontend-container
-        image: chriswen430week09acr.azurecr.io/frontend:latest
+        image: chriswen430acr.azurecr.io/frontend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 80

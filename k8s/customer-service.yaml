@@ -1,36 +1,36 @@
-# sit722-10-2d/k8s/product-service.yaml
+# sit722-10-2d/k8s/customer-service.yaml
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: product-service-task10-2d
+  name: customer-service-task10-2d
   labels:
-    app: product-service
+    app: customer-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: product-service
+      app: customer-service
   template:
     metadata:
       labels:
-        app: product-service
+        app: customer-service
     spec:
       containers:
-      - name: product-service-container
-        image: chriswen430acr.azurecr.io/product_service:latest
+      - name: customer-service-container
+        image: chriswen430acr.azurecr.io/customer_service:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
         env:
         # Database connection details
         - name: POSTGRES_HOST
-          value: product-db-service-task10-2d
+          value: customer-db-service-task10-2d
         - name: POSTGRES_DB
           valueFrom:
             configMapKeyRef:
               name: ecomm-config-task10-2d
-              key: PRODUCTS_DB_NAME
+              key: CUSTOMERS_DB_NAME
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
@@ -65,14 +65,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: product-service-task10-2d
+  name: customer-service-task10-2d
   labels:
-    app: product-service
+    app: customer-service
 spec:
   selector:
-    app: product-service
+    app: customer-service
   ports:
     - protocol: TCP
-      port: 8000
+      port: 8002
       targetPort: 8000
   type: LoadBalancer
