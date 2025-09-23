@@ -228,7 +228,17 @@ jobs:
         docker build -t ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }} ./backend/order_service/
         docker push ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }}
 
-    # 8. Run Docker Scout to analyze images for vulnerabilities
+    # 8. Ensure Docker Scout is installed
+    - name: Ensure Docker Scout Installed
+      run: |
+        if ! docker scout --version > /dev/null 2>&1; then
+          echo "Docker Scout not found. Installing..."
+          curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh
+        else
+          echo "Docker Scout already installed: $(docker scout --version)"
+        fi
+    
+    # 9. Run Docker Scout to analyze images for vulnerabilities
     - name: Docker Scout Analysis
       run: |
         set -e
@@ -250,7 +260,7 @@ jobs:
         cat order_report.txt >> full_report.txt
         cat full_report.txt
 
-    # 9. Logout from Azure for security (runs even if image push fails)
+    # 10. Logout from Azure for security (runs even if image push fails)
     - name: Logout from Azure
       run: az logout
       if: always()
