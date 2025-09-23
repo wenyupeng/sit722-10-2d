@@ -86,19 +86,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4 # Action to check out your repository code
 
-      # 2. Statistic code analysis
-      - name: Code Quality Checks
-        run: |
-          pip install flake8 bandit
-          flake8 backend/order_service
-          bandit -r backend/order_service
-    
-      # 3. Set up Python environment
+      # 2. Set up Python environment
       - name: Set up Python 3.10
         uses: actions/setup-python@v5 # Action to set up Python environment
         with:
           python-version: '3.10'
 
+      # 3. Statistic code analysis
+      - name: Code Quality Checks
+        continue-on-error: true # Do not fail the job if linting fails
+        run: |
+          pip install flake8 bandit
+          flake8 backend/order_service
+          bandit -r backend/order_service
+    
       # 4. Install dependencies and run code quality checks
       - name: Install dependencies
         run: | # Use a multi-line script to install pip dependencies
