@@ -228,17 +228,13 @@ jobs:
         docker build -t ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }} ./backend/order_service/
         docker push ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }}
 
-    # 8. Install Docker Scout plugin
+    # 8. Ensure Docker Scout is installed
     - name: Install Docker Scout
       run: |
         set -e
         docker --version
-        PLUGIN_DIR="$HOME/.docker/cli-plugins"
-        mkdir -p "$PLUGIN_DIR"
         curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh
-        mv docker-scout "$PLUGIN_DIR/docker-scout"
-        chmod +x "$PLUGIN_DIR/docker-scout"
-        export PATH="$PLUGIN_DIR:$PATH"
+        export PATH="$HOME/.docker/cli-plugins:$PATH"
         docker scout --version
 
     # 9. Run Docker Scout to analyze images
@@ -252,14 +248,14 @@ jobs:
         docker scout cves ${{ env.ACR_LOGIN_SERVER }}/product_service:${{ env.PRODUCT_VERSION }} > product_report.txt
         echo "Scanning Order Service..."
         docker scout cves ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }} > order_report.txt
-
-        # Combine reports
+        
         echo "==== Customer Service ====" > full_report.txt
         cat customer_report.txt >> full_report.txt
         echo "==== Product Service ====" >> full_report.txt
         cat product_report.txt >> full_report.txt
         echo "==== Order Service ====" >> full_report.txt
         cat order_report.txt >> full_report.txt
+
         cat full_report.txt
 
     # 10. Logout from Azure for security (runs even if image push fails)
