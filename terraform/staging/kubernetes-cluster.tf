@@ -25,9 +25,10 @@ data "azurerm_container_registry" "existing_acr" {
 }
 
 # Grant AKS permission to pull images from the existing ACR
-resource "azurerm_role_assignment" "acr_pull" {
+resource "azurerm_role_assignment" "aks_acr_pull" {
   principal_id                     = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
   role_definition_name             = "AcrPull"
   scope                            = data.azurerm_container_registry.existing_acr.id
   skip_service_principal_aad_check = true
+  depends_on                       = [azurerm_kubernetes_cluster.aks]
 }
