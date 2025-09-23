@@ -52,7 +52,7 @@ jobs:
       - name: Log in to Azure
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS_STAGING }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
       - name: Set up Terraform
