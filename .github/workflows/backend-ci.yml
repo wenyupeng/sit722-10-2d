@@ -237,7 +237,12 @@ jobs:
         export PATH="$HOME/.docker/cli-plugins:$PATH"
         docker scout version
 
-    # 9. Run Docker Scout to analyze images
+    # 9. Login to Azure Container Registry
+    - name: Login to ACR
+      run: |
+        echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ env.ACR_LOGIN_SERVER }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
+
+    # 10. Run Docker Scout to analyze images
     - name: Docker Scout Analysis
       run: |
         set -e
@@ -258,7 +263,7 @@ jobs:
 
         cat full_report.txt
 
-    # 10. Logout from Azure for security (runs even if image push fails)
+    # 11. Logout from Azure for security (runs even if image push fails)
     - name: Logout from Azure
       run: az logout
       if: always()
