@@ -228,27 +228,18 @@ jobs:
         docker build -t ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }} ./backend/order_service/
         docker push ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }}
 
-    # 8. Ensure Docker Scout is installed and usable
-    - name: Ensure Docker Scout Installed
+    # 8. Install Docker Scout plugin
+    - name: Install Docker Scout
       run: |
         set -e
-
-        if ! command -v docker &> /dev/null
-        then
-          echo "Docker CLI not found. Installing Docker..."
-          curl -fsSL https://get.docker.com | sh
-        fi
-
-        if ! docker scout --version > /dev/null 2>&1; then
-          echo "Docker Scout not found. Installing..."
-          mkdir -p ~/.docker/cli-plugins
-          curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh
-          mv docker-scout ~/.docker/cli-plugins/docker-scout
-          chmod +x ~/.docker/cli-plugins/docker-scout
-        fi
-
-        echo "Docker CLI version: $(docker --version)"
-        echo "Docker Scout version: $(docker scout --version)"
+        docker --version
+        PLUGIN_DIR="$HOME/.docker/cli-plugins"
+        mkdir -p "$PLUGIN_DIR"
+        curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh
+        mv docker-scout "$PLUGIN_DIR/docker-scout"
+        chmod +x "$PLUGIN_DIR/docker-scout"
+        export PATH="$PLUGIN_DIR:$PATH"
+        docker scout --version
 
     # 9. Run Docker Scout to analyze images
     - name: Docker Scout Analysis
@@ -257,10 +248,8 @@ jobs:
 
         echo "Scanning Customer Service..."
         docker scout cves ${{ env.ACR_LOGIN_SERVER }}/customer_service:${{ env.CUSTOMER_VERSION }} > customer_report.txt
-
         echo "Scanning Product Service..."
         docker scout cves ${{ env.ACR_LOGIN_SERVER }}/product_service:${{ env.PRODUCT_VERSION }} > product_report.txt
-
         echo "Scanning Order Service..."
         docker scout cves ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }} > order_report.txt
 
@@ -271,10 +260,7 @@ jobs:
         cat product_report.txt >> full_report.txt
         echo "==== Order Service ====" >> full_report.txt
         cat order_report.txt >> full_report.txt
-
-        # Output full report to console
         cat full_report.txt
-
 
     # 10. Logout from Azure for security (runs even if image push fails)
     - name: Logout from Azure
