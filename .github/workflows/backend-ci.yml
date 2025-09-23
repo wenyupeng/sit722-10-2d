@@ -209,7 +209,6 @@ jobs:
         fi
         echo "ORDER_VERSION=v$latest_order_version" >> $GITHUB_ENV
 
-  
     # 5. Build and Push Docker image for Customer Service
     - name: Build and Push Customer Service Image
       run: |
@@ -228,37 +227,38 @@ jobs:
         docker build -t ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }} ./backend/order_service/
         docker push ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }}
 
-    # 8. Ensure Docker Scout is installed
-    - name: Install Docker Scout
+    # 8. Ensure Trivy is installed
+    - name: Install Trivy
       run: |
-        set -e
-        docker --version
-        curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh
-        export PATH="$HOME/.docker/cli-plugins:$PATH"
-        docker scout version
+        sudo apt-get update
+        sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.gpg | sudo gpg --dearmor -o /usr/share/keyrings/trivy-archive-keyring.gpg
+        echo deb [signed-by=/usr/share/keyrings/trivy-archive-keyring.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee /etc/apt/sources.list.d/trivy.list
+        sudo apt-get update
+        sudo apt-get install -y trivy
 
-    # 9. Login to Azure Container Registry
-    - name: Login to ACR
-      run: |
-        echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ env.ACR_LOGIN_SERVER }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
-
-    # 10. Pull images from ACR
+    # 9. Pull images from ACR
     - name: Pull images from ACR
       run: |
         docker pull ${{ env.ACR_LOGIN_SERVER }}/customer_service:${{ env.CUSTOMER_VERSION }}
         docker pull ${{ env.ACR_LOGIN_SERVER }}/product_service:${{ env.PRODUCT_VERSION }}
         docker pull ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }}
-    # 11. Run Docker Scout to analyze images
-    - name: Docker Scout Analysis
+
+    # 11. Run Trivy to analyze images
+    - name: Scan images with Trivy
+      continue-on-error: true
       run: |
         set -e
+        echo "Scanning Customer Service..."
+        trivy image --severity HIGH,CRITICAL --ignore-unfixed ${{ env.ACR_LOGIN_SERVER }}/customer_service:${{ env.CUSTOMER_VERSION }} > customer_report.txt || true
 
-        echo "Scanning Service..."
-        docker scout cves --local ${{ env.ACR_LOGIN_SERVER }}/customer_service:${{ env.CUSTOMER_VERSION }} > customer_report.txt || true
-        docker scout cves --local ${{ env.ACR_LOGIN_SERVER }}/product_service:${{ env.PRODUCT_VERSION }} > product_report.txt || true
-        docker scout cves --local ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }} > order_report.txt || true
+        echo "Scanning Product Service..."
+        trivy image --severity HIGH,CRITICAL --ignore-unfixed ${{ env.ACR_LOGIN_SERVER }}/product_service:${{ env.PRODUCT_VERSION }} > product_report.txt || true
 
-        
+        echo "Scanning Order Service..."
+        trivy image --severity HIGH,CRITICAL --ignore-unfixed ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }} > order_report.txt || true
+
+        # Merge reports
         echo "==== Customer Service ====" > full_report.txt
         cat customer_report.txt >> full_report.txt
         echo "==== Product Service ====" >> full_report.txt
@@ -266,9 +266,10 @@ jobs:
         echo "==== Order Service ====" >> full_report.txt
         cat order_report.txt >> full_report.txt
 
+        # Output merged report
         cat full_report.txt
 
-    # 11. Logout from Azure for security (runs even if image push fails)
+    # 12. Logout from Azure for security (runs even if image push fails)
     - name: Logout from Azure
       run: az logout
       if: always()
