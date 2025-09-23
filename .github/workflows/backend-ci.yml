@@ -242,20 +242,22 @@ jobs:
       run: |
         echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ env.ACR_LOGIN_SERVER }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
-    # 10. Run Docker Scout to analyze images
+    # 10. Pull images from ACR
+    - name: Pull images from ACR
+      run: |
+        docker pull ${{ env.ACR_LOGIN_SERVER }}/customer_service:${{ env.CUSTOMER_VERSION }}
+        docker pull ${{ env.ACR_LOGIN_SERVER }}/product_service:${{ env.PRODUCT_VERSION }}
+        docker pull ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }}
+    # 11. Run Docker Scout to analyze images
     - name: Docker Scout Analysis
       run: |
         set -e
 
-        echo "Scanning Customer Service..."
-        docker scout cves --registry ${{ env.ACR_LOGIN_SERVER }} --username ${{ secrets.ACR_USERNAME }} --password ${{ secrets.ACR_PASSWORD }} \
-        ${{ env.ACR_LOGIN_SERVER }}/customer_service:${{ env.CUSTOMER_VERSION }} > customer_report.txt  || true
-        echo "Scanning Product Service..."
-        docker scout cves --registry ${{ env.ACR_LOGIN_SERVER }} --username ${{ secrets.ACR_USERNAME }} --password ${{ secrets.ACR_PASSWORD }} \
-        ${{ env.ACR_LOGIN_SERVER }}/product_service:${{ env.PRODUCT_VERSION }} > product_report.txt  || true
-        echo "Scanning Order Service..."
-        docker scout cves --registry ${{ env.ACR_LOGIN_SERVER }} --username ${{ secrets.ACR_USERNAME }} --password ${{ secrets.ACR_PASSWORD }} \
-        ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }} > order_report.txt  || true
+        echo "Scanning Service..."
+        docker scout cves --local ${{ env.ACR_LOGIN_SERVER }}/customer_service:${{ env.CUSTOMER_VERSION }} > customer_report.txt || true
+        docker scout cves --local ${{ env.ACR_LOGIN_SERVER }}/product_service:${{ env.PRODUCT_VERSION }} > product_report.txt || true
+        docker scout cves --local ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }} > order_report.txt || true
+
         
         echo "==== Customer Service ====" > full_report.txt
         cat customer_report.txt >> full_report.txt
