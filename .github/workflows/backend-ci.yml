@@ -248,11 +248,11 @@ jobs:
         set -e
 
         echo "Scanning Customer Service..."
-        docker scout cves ${{ env.ACR_LOGIN_SERVER }}/customer_service:${{ env.CUSTOMER_VERSION }} > customer_report.txt
+        docker scout cves --registry ${{ env.ACR_LOGIN_SERVER }} --username ${{ secrets.ACR_USERNAME }} --password ${{ secrets.ACR_PASSWORD }} ${{ env.ACR_LOGIN_SERVER }}/customer_service:${{ env.CUSTOMER_VERSION }} > customer_report.txt
         echo "Scanning Product Service..."
-        docker scout cves ${{ env.ACR_LOGIN_SERVER }}/product_service:${{ env.PRODUCT_VERSION }} > product_report.txt
+        docker scout cves --registry ${{ env.ACR_LOGIN_SERVER }} --username ${{ secrets.ACR_USERNAME }} --password ${{ secrets.ACR_PASSWORD }} ${{ env.ACR_LOGIN_SERVER }}/product_service:${{ env.PRODUCT_VERSION }} > product_report.txt
         echo "Scanning Order Service..."
-        docker scout cves ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }} > order_report.txt
+        docker scout cves --registry ${{ env.ACR_LOGIN_SERVER }} --username ${{ secrets.ACR_USERNAME }} --password ${{ secrets.ACR_PASSWORD }} ${{ env.ACR_LOGIN_SERVER }}/order_service:${{ env.ORDER_VERSION }} > order_report.txt
         
         echo "==== Customer Service ====" > full_report.txt
         cat customer_report.txt >> full_report.txt
