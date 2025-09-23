@@ -3,6 +3,26 @@
 version: "3.8"
 
 services:
+  # PostgreSQL Database for Customer Service
+  customer_db:
+    image: postgres:15-alpine
+    container_name: customer_db_container
+    restart: always
+    environment:
+      POSTGRES_DB: customers
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      # Persistent volume for Customer Service database data
+      - customer_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d customers"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   product_db:
     image: postgres:15-alpine
     container_name: product_db_container
@@ -40,6 +60,26 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  # Customer Microservice (FastAPI)
+  customer_service:
+    build:
+      context: ./backend/customer_service
+      dockerfile: Dockerfile
+    container_name: customer_api_container
+    image: chrisyp/task10-2d_customer_service:latest
+    restart: always
+    ports:
+      - "8002:8000"
+    environment:
+      POSTGRES_HOST: customer_db # Connects to the 'customer_db' service within Docker network
+      AZURE_SAS_TOKEN_EXPIRY_HOURS: 24
+    depends_on:
+      customer_db:
+        condition: service_healthy # Ensure customer_db is healthy before starting
+    volumes:
+      - ./backend/customer_service/app:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
 
   # Product Microservice (FastAPI)
   product_service:
@@ -98,6 +138,8 @@ services:
     ports:
       - "3000:80" # Map container port 80 (Nginx default) to host port 3000
     depends_on:
+      customer_service:
+        condition: service_started
       product_service:
         condition: service_started
       order_service:
@@ -107,5 +149,6 @@ services:
 
 # Named volumes for data persistence for each database
 volumes:
+  customer_db_data: # Data for the Customer Service's PostgreSQL database
   product_db_data: # Data for the Product Service's PostgreSQL database
   order_db_data: # Data for the Order Service's PostgreSQL database
