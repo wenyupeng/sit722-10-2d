@@ -73,7 +73,7 @@ jobs:
       # 5. Deploy backend Infrastructure to the staging AKS cluster
       - name: Deploy Backend Infrastructure to Staging AKS
         run: |
-          az aks get-credentials --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.AKS_CLUSTER_NAME }}
+          az aks get-credentials --resource-group sit722devops102d-rg --name sit722devops102d-aks
           kubectl apply -f k8s/configmaps.yaml
           kubectl apply -f k8s/secrets.yaml
           kubectl apply -f k8s/customer-db.yaml
@@ -83,7 +83,6 @@ jobs:
       # 6. Deploy backend microservices to the staging AKS cluster
       - name: Deploy Backend Microservices to Staging AKS
         run: |
-          az aks get-credentials --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.AKS_CLUSTER_NAME }}
           kubectl apply -f k8s/customer-service.yaml
           kubectl apply -f k8s/product-service.yaml
           kubectl apply -f k8s/order-service.yaml
