@@ -45,6 +45,11 @@ spec:
             configMapKeyRef:
               name: ecomm-config-task10-2d
               key: PRODUCT_SERVICE_URL
+        - name: CUSTOMER_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ecomm-config-task10-2d
+              key: CUSTOMER_SERVICE_URL              
 ---
 apiVersion: v1
 kind: Service

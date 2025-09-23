@@ -536,5 +536,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // This helps show asynchronous status updates from RabbitMQ in real-time
     setInterval(fetchOrders, 10000); // Refresh orders every 10 seconds
     setInterval(fetchProducts, 15000); // Refresh products every 15 seconds to see stock changes
+    setInterval(fetchCustomers, 15000); // Refresh Customers every 15 seconds to see stock changes
 
 });
