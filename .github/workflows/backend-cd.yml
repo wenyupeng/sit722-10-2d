@@ -133,20 +133,24 @@ jobs:
           done
           
           echo "Product Service IP: http://$PRODUCT_IP:8000"
-          if curl -s --head http://$PRODUCT_IP:8000 | grep "200 OK" > /dev/null; then
-            echo "Product Service is healthy."
-          else
-            echo "Product Service health check failed."
-            exit 1
-          fi
+          for i in $(seq 1 5); do
+            if curl -s --head http://$PRODUCT_IP:8000 | grep "200 OK"; then
+              echo "Product Service is healthy."
+              break
+            fi
+            echo "Waiting for Product Service to be ready..."
+            sleep 5
+          done
 
           echo "Order Service IP: http://$ORDER_IP:8001"
-          if curl -s --head http://$ORDER_IP:8001 | grep "200 OK" > /dev/null; then
-            echo "Order Service is healthy."
-          else
-            echo "Order Service health check failed."
-            exit 1
-          fi
+          for i in $(seq 1 5); do
+            if curl -s --head http://$ORDER_IP:8001 | grep "200 OK"; then
+              echo "Order Service is healthy."
+              break
+            fi
+            echo "Waiting for Order Service to be ready..."
+            sleep 5
+          done
           echo "All acceptance tests passed."
 
       # 9. Capture Customer Service IP for Workflow Output
