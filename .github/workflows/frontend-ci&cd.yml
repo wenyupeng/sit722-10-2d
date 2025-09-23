@@ -55,7 +55,7 @@ jobs:
         uses: azure/aks-set-context@v3
         with:
           resource-group: ${{ inputs.aks_resource_group || 'chriswen430-rg'}}
-          cluster-name: ${{ inputs.aks_cluster_name || 'week09-aks' }}
+          cluster-name: ${{ inputs.aks_cluster_name || 'chriswen430-aks' }}
 
       # Auto-fetch Product and Order service IPs from Kubernetes
       - name: Fetch Backend Service IPs from AKS

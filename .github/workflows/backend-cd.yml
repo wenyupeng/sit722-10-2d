@@ -241,7 +241,8 @@ jobs:
           
           for i in $(seq 1 60); do
             echo "Attempt $i/60 to get IPs..."
-            PRODUCT_IP=$(kubectl get service product-service-w08e1 -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            CUSTOMER_IP=$(kubectl get service customer-service-task10-2d -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            PRODUCT_IP=$(kubectl get service product-service-task10-2d -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
             ORDER_IP=$(kubectl get service order-service-task10-2d -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
             if [[ -n "$CUSTOMER_IP" && -n "$PRODUCT_IP" && -n "$ORDER_IP" ]]; then
