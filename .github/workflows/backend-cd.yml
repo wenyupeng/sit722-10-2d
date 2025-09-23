@@ -122,6 +122,7 @@ jobs:
       - name: Run Simple Acceptance Tests
         run: |
           echo "Running simple acceptance tests against deployed services..."
+          echo "Customer Service IP: http://$CUSTOMER_IP:8002"
           for i in $(seq 1 5); do
             if curl -s --head http://$CUSTOMER_IP:8002 | grep "200 OK"; then
               echo "Customer Service is healthy."
@@ -131,6 +132,7 @@ jobs:
             sleep 5
           done
           
+          echo "Product Service IP: http://$PRODUCT_IP:8000"
           if curl -s --head http://$PRODUCT_IP:8000 | grep "200 OK" > /dev/null; then
             echo "Product Service is healthy."
           else
@@ -138,6 +140,7 @@ jobs:
             exit 1
           fi
 
+          echo "Order Service IP: http://$ORDER_IP:8001"
           if curl -s --head http://$ORDER_IP:8001 | grep "200 OK" > /dev/null; then
             echo "Order Service is healthy."
           else

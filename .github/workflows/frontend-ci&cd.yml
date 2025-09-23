@@ -31,13 +31,6 @@ on:
         required: true
         type: string
         default: 'chriswen430-rg'
-  push:
-    branches:
-      - main
-    paths: # Only trigger if changes are in backend directories
-      - 'frontend/**'
-      - '.github/workflows/frontend-ci&cd.yml' # Trigger if this workflow file changes
-
 
 jobs:
   deploy_frontend:
