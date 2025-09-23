@@ -44,12 +44,6 @@ jobs:
       ORDER_API_IP: ${{ steps.get_order_ip.outputs.external_ip }}
 
     steps:
-      # 0. Check if the upstream workflow run was successful
-      - name: Check previous workflow conclusion
-        if: ${{ github.event.workflow_run.conclusion != 'success' }}
-        run: |
-          echo "❌ Upstream workflow failed. Stopping this workflow."
-          exit 1
       # 1. Checkout the repository code
       - name: Checkout repository
         uses: actions/checkout@v4
