@@ -61,24 +61,21 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 'latest'
+
       # 3. Terraform Init and Apply to provision AKS, ACR, Networking, etc.
       - name: Terraform Init (Staging Environment)
-        uses: hashicorp/terraform-github-actions@v1.4.0
-        with:
-          tf_actions_version: latest
-          tf_actions_subcommand: 'init'
-          tf_actions_working_directory: 'terraform'
+        run: terraform init
+        working-directory: terraform
           
       # 4. Terraform Apply to provision AKS, ACR, Networking, etc.
       - name: Terraform Apply (Provision Staging Environment)
-        uses: hashicorp/terraform-github-actions@v1.4.0
-        with:
-          tf_actions_version: latest
-          tf_actions_subcommand: 'apply'
-          tf_actions_working_directory: 'terraform'
-          tf_actions_auto_approve: true
-          tf_actions_backend_type: 'azurerm'
-      
+        run: terraform apply -auto-approve
+        working-directory: terraform
+            
       # 5. Deploy backend Infrastructure to the staging AKS cluster
       - name: Deploy Backend Infrastructure to Staging AKS
         run: |
@@ -161,14 +158,8 @@ jobs:
       # 9. Capture Customer Service IP for Workflow Output
       - name: Terraform Destroy (Clean Up Staging Environment)
         if: always()
-        uses: hashicorp/terraform-github-actions@v1.4.0
-        with:
-          tf_actions_version: latest
-          tf_actions_subcommand: 'destroy'
-          tf_actions_working_directory: 'terraform'
-          tf_actions_auto_approve: true
-          tf_actions_backend_type: 'azurerm'
-
+        run: terraform destroy -auto-approve
+        working-directory: terraform
 
   deploy_backend:
     runs-on: ubuntu-latest
