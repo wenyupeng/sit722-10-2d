@@ -19,6 +19,10 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 }
 
+data "azurerm_container_registry" "existing_acr" {
+  name                = "chriswen430acr"
+  resource_group_name = "chriswen430-rg"
+}
 
 # Grant AKS permission to pull images from the existing ACR
 resource "azurerm_role_assignment" "acr_pull" {
