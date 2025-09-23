@@ -5,23 +5,28 @@ name: CI & CD - Deploy Frontend to AKS
 # This workflow can be called by other workflows and takes inputs.
 # Or it can be run manually if you provide the IPs.
 on:
+  workflow_run:
+    workflows: ["Backend CD - Deploy Backend Services to AKS"]
+    types:
+      - completed
+
   workflow_dispatch:
     inputs:
       aks_cluster_name:
         description: 'Name of the AKS Cluster to deploy to'
         required: true
-        default: '<aks_name>'
+        default: 'chriswen430-aks'
       aks_resource_group:
         description: 'Resource Group of the AKS Cluster'
         required: true
-        default: '<<resource_group_name>'
+        default: 'chriswen430-rg'
 
   workflow_call:
     inputs:
       aks_cluster_name:
         required: true
         type: string
-        default: 'week09-aks'
+        default: 'chriswen430-aks'
       aks_resource_group:
         required: true
         type: string
@@ -31,7 +36,7 @@ on:
       - main
     paths: # Only trigger if changes are in backend directories
       - 'frontend/**'
-      - '.github/workflows/frontend-cicd.yml' # Trigger if this workflow file changes
+      - '.github/workflows/frontend-ci&cd.yml' # Trigger if this workflow file changes
 
 
 jobs:
@@ -64,31 +69,36 @@ jobs:
         id: fetch_ips
         run: |
           echo "Fetching Product and Order Service IPs from AKS..."
-          PRODUCT_IP=$(kubectl get svc product-service-w08e1 -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          CUSTOMER_IP=$(kubectl get svc customer-service-task10-2d -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          PRODUCT_IP=$(kubectl get svc product-service-task10-2d -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
           ORDER_IP=$(kubectl get svc order-service-task10-2d -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
-          if [[ -z "$PRODUCT_IP" || -z "$ORDER_IP" ]]; then
+          if [[ -z "$CUSTOMER_IP" || -z "$PRODUCT_IP" || -z "$ORDER_IP" ]]; then
             echo "Error: Could not fetch service IPs from Kubernetes."
             exit 1
           fi
 
+          echo "CUSTOMER_API_IP=http://$CUSTOMER_IP:8002" >> $GITHUB_ENV
           echo "PRODUCT_API_IP=http://$PRODUCT_IP:8000" >> $GITHUB_ENV
           echo "ORDER_API_IP=http://$ORDER_IP:8001" >> $GITHUB_ENV
 
       - name: Inject Backend IPs into Frontend main.js
         run: |
-          PRODUCT_IP=$(kubectl get svc product-service-w08e1 -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          CUSTOMER_IP=$(kubectl get svc customer-service-task10-2d -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          PRODUCT_IP=$(kubectl get svc product-service-task10-2d -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
           ORDER_IP=$(kubectl get svc order-service-task10-2d -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
-          if [[ -z "$PRODUCT_IP" || -z "$ORDER_IP" ]]; then
+          if [[ -z "$CUSTOMER_IP" || -z "$PRODUCT_IP" || -z "$ORDER_IP" ]]; then
             echo "Error: Could not fetch service IPs from Kubernetes."
             exit 1
           fi
 
+          CUSTOMER_API_IP="http://$CUSTOMER_IP:8002"
           PRODUCT_API_IP="http://$PRODUCT_IP:8000"
           ORDER_API_IP="http://$ORDER_IP:8001"
 
           echo "Injecting IPs into frontend/main.js"
+          sed -i "s|_CUSTOMER_API_URL_|$CUSTOMER_API_IP|g" frontend/main.js
           sed -i "s|_PRODUCT_API_URL_|$PRODUCT_API_IP|g" frontend/main.js
           sed -i "s|_ORDER_API_URL_|$ORDER_API_IP|g" frontend/main.js
 
