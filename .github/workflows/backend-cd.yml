@@ -63,12 +63,12 @@ jobs:
       # 3. Terraform Init and Apply to provision AKS, ACR, Networking, etc.
       - name: Terraform Init (Staging Environment)
         run: terraform init
-        working-directory: terraform
+        working-directory: terraform/staging
           
       # 4. Terraform Apply to provision AKS, ACR, Networking, etc.
       - name: Terraform Apply (Provision Staging Environment)
         run: terraform apply -auto-approve
-        working-directory: terraform
+        working-directory: terraform/staging
             
       # 5. Deploy backend Infrastructure to the staging AKS cluster
       - name: Deploy Backend Infrastructure to Staging AKS
@@ -153,7 +153,7 @@ jobs:
       - name: Terraform Destroy (Clean Up Staging Environment)
         if: always()
         run: terraform destroy -auto-approve
-        working-directory: terraform
+        working-directory: terraform/staging
 
   deploy_backend:
     runs-on: ubuntu-latest
